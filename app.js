@@ -1,17 +1,26 @@
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
 const ejs = require("ejs");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
+const User = require("./models/user");
+const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const authRoutes = require("./routes/authRoutes");
+const db = require("./config/db");
 
 const app = express();
 
+//ejs environment
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
+// session
 app.use(
     session({
         secret: process.env.SECRET,
@@ -19,29 +28,20 @@ app.use(
         saveUninitialized: false,
     })
 );
-
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-});
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error: "));
-db.once("open", function () {
-    console.log("Connected to Database successfully!");
-}); 
-
-// passport.use(User.createStrategy());
-// passport.serializeUser(User.serializeUser());
-// passport.deserializeUser(User.deserializeUser());
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 //routes
-app.get("/", (req, res) => {
-    res.render("home");
-});
+app.get("/", (req, res) => {res.render("home");});
+app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/product", productRoutes);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`App is running on port ${PORT}`);
 });
