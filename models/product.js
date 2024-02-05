@@ -4,7 +4,7 @@ const slugify = require("slugify");
 const productSchema = new mongoose.Schema({
     product: {
         public_id: { type: String },
-        url: { type: String }
+        url: { type: String },
     },
     title: {
         type: String,
